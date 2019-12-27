@@ -38,7 +38,7 @@ stocks_raw = get_txt(stock_files)
 tickers = stocks_raw['Symbol']
 tickers = tickers.sort_values().reset_index(drop=True)
 
-stocks_start = datetime.datetime(2019, 12, 20)
+stocks_start = datetime.datetime(1974, 1, 1)
 stocks_end = datetime.datetime(2019, 12, 20)
 
 def get_stock_data(tickers, startdate, enddate):
