@@ -24,7 +24,7 @@ from itertools import chain
 # import matplotlib.pyplot as plt
 
 
-path = '/Users/jasonrubenstein/Downloads/Tickers/Use/*.txt'
+path = '~/Tickers/Use/*.txt'
 stock_files = glob.glob(path)
 
 def get_txt(files):
@@ -64,7 +64,7 @@ stock_data = get_stock_data(t1, stocks_start, stocks_end)#.reset_index()
 Create sqlite3 database for data storage?
 """
 
-stock_data.to_csv('/Users/jasonrubenstein/Desktop/Python/QuantFin1/StockData/stock_data.csv', index=0)
+stock_data.to_csv('~/Python/QuantFin1/StockData/stock_data.csv', index=0)
 
 
 end_time = time()
