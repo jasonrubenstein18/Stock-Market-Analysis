@@ -35,7 +35,7 @@ pd.options.mode.chained_assignment = None  # default='warn'
 
 def read_data(chunksize):
     chunksize = chunksize
-    sd = pd.read_csv('~/Desktop/Python/QuantFin1/StockData/stock_data.csv', chunksize=chunksize, iterator=True)
+    sd = pd.read_csv('~/stock_data.csv', chunksize=chunksize, iterator=True)
     stock_data = pd.concat(sd, ignore_index=True)
     return stock_data
 
