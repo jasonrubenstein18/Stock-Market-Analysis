@@ -4,6 +4,7 @@ Created on Wed Dec 18 11:20:22 2019
 @author: jasonrubenstein
 """
 
+
 import datetime
 from time import time, sleep
 import os
@@ -23,17 +24,18 @@ from pulp import LpProblem, LpVariable, lpSum, LpMaximize, value, LpInteger
 import cvxpy
 import pstats
 import statistics
+import matplotlib.pyplot as plt
+import gc
 import seaborn as sns
 from matplotlib import rc
 import matplotlib
 matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
-import gc
 pd.options.mode.chained_assignment = None  # default='warn'
+
 
 def read_data(chunksize):
     chunksize = chunksize
-    sd = pd.read_csv('...', chunksize=chunksize, iterator=True)
+    sd = pd.read_csv('~/Desktop/Python/QuantFin1/StockData/stock_data.csv', chunksize=chunksize, iterator=True)
     stock_data = pd.concat(sd, ignore_index=True)
     return stock_data
 
@@ -42,6 +44,15 @@ stock_data = read_data(100000)
 print("Most recent date on file = " + str(stock_data['Date'].max())+"\n")
 print("Most ancient date on file = " + str(stock_data['Date'].min())+"\n")
 
+
+print("Type 1 for Apple and Amazon only, or 0 for all stocks" + "\n" +
+      "Typing 0 may lead to increased run time")
+ticker_options = input()
+
+if ticker_options == 1:
+    working_df = stock_data[(stock_data['Ticker'] == "AAPL") | (stock_data['Ticker'] == "AMZN")]
+else:
+    pass
 
 # working_df = stock_data[(stock_data['Ticker'] == "AAPL") | (stock_data['Ticker'] == "AMZN")]
 
