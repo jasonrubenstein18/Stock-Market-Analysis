@@ -29,13 +29,11 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import gc
-
 pd.options.mode.chained_assignment = None  # default='warn'
-
 
 def read_data(chunksize):
     chunksize = chunksize
-    sd = pd.read_csv('~/stock_data.csv', chunksize=chunksize, iterator=True)
+    sd = pd.read_csv('...', chunksize=chunksize, iterator=True)
     stock_data = pd.concat(sd, ignore_index=True)
     return stock_data
 
@@ -45,9 +43,7 @@ print("Most recent date on file = " + str(stock_data['Date'].max())+"\n")
 print("Most ancient date on file = " + str(stock_data['Date'].min())+"\n")
 
 
-
-
-working_df = stock_data[(stock_data['Ticker'] == "AAPL") | (stock_data['Ticker'] == "AMZN")]
+# working_df = stock_data[(stock_data['Ticker'] == "AAPL") | (stock_data['Ticker'] == "AMZN")]
 
 
 def general_fixes(df):
@@ -75,7 +71,7 @@ def simple_momentum(df):
             261) - 1)
     return df
 
-def add_macd(df):
+def macd(df):
     df['12_day_ema'] = 0
     df['26_day_ema'] = 0
     df['MACD'] = 0
@@ -90,7 +86,7 @@ def add_macd(df):
 
 def twelve_two_month_price(df):
     df = simple_momentum(df)
-    df = add_macd(df)
+    df = macd(df)
     if df.groupby("Ticker")["Adj_Close"].shift(261) is not None:
         df.loc[:, "12_month_price"] = df.groupby("Ticker")["Adj_Close"].shift(261)
     elif df.groupby("Ticker")["Adj_Close"].shift(260) is not None:
@@ -142,16 +138,16 @@ def derivatives(df):
 # print(test['pct_change'].sum())
 
 
-working_df_use = derivatives(working_df)
+working_df_use = derivatives(stock_data)
 gc.collect()
 
 
 
 
-print("Enter date (YYYY/MM/DD):\n")
+print("Enter date (YYYY/MM/DD) for momentum optimization:\n")
 date = input()
 
-print("dateID = " + str(working_df[(working_df['Date'] == date)]['DateID'].unique()))
+print("dateID = " + str(working_df_use[(working_df_use['Date'] == date)]['DateID'].unique()))
 
 # print("Enter DateID:\n")
 # dateID = input()
@@ -160,10 +156,10 @@ print("dateID = " + str(working_df[(working_df['Date'] == date)]['DateID'].uniqu
 # dateID_end = str(int(dateID) + 3)
 # dates = list(range(dateID, dateID_end))
 
-print("Enter funds:\n")
+print("Enter funds constraint:\n")
 funds = int(input())
 
-print("What indicator (MACD or 30_day_12_2_momentum)?:\n")
+print("Choose indicator (MACD or 30_day_12_2_momentum)?:\n")
 indicator = input()
 
 
@@ -209,11 +205,17 @@ def optimize_portfolio(df, date, funds, indicator):
     return print([portfolio, np.round(open_price,2), np.round(pct_change,2)], date)
 
 
-optimize_portfolio(working_df, date, funds, indicator)
+optimize_portfolio(working_df_use, date, funds, indicator)
 
 
 print("Choose ticker for Echo State Network:\n")
 ticker = str(input())
+
+print("Ticker: " + ticker + "\n" +
+      "has " + str(len(stock_data[(stock_data['Ticker'] == ticker)])) + " rows in data set")
+
+print("Choose training length for ESN:\n")
+trainlen = input()
 
 def esn_predict(df, ticker, trainlen):
     sparsity = 0.2
@@ -230,7 +232,7 @@ def esn_predict(df, ticker, trainlen):
               spectral_radius = spectral_radius,
               noise=noise)
 
-    trainlen = 1500
+    trainlen = trainlen
     future = 30
     futureTotal=60
     pred_tot=np.zeros(futureTotal)
@@ -252,59 +254,25 @@ def esn_predict(df, ticker, trainlen):
     decay = 0.5
     running_mean = 0.0
     run_avg_predictions.append(running_mean)
+    if trainlen < 1000:
+        raise ValueError('Train len less than minimum (1000)')
+    else:
+        #rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+        rc('text', usetex=False)
 
+        plt.figure(figsize=(16,8))
+        plt.plot(range(trainlen-1000,trainlen+futureTotal),testarray[trainlen-1000:trainlen+futureTotal],'b',label="Data", alpha=0.3)
+        #plt.plot(range(0,trainlen),pred_training,'.g',  alpha=0.3)
+        plt.plot(range(trainlen,trainlen+futureTotal),pred_tot,'k',  alpha=0.8, label='Free Running ESN')
 
-    #rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
-    rc('text', usetex=False)
+        lo,hi = plt.ylim()
+        plt.plot([trainlen,trainlen],[lo+np.spacing(1),hi-np.spacing(1)],'k:', linewidth=4)
 
-    plt.figure(figsize=(16,8))
-    plt.plot(range(1000,trainlen+futureTotal),testarray[1000:trainlen+futureTotal],'b',label="Data", alpha=0.3)
-    #plt.plot(range(0,trainlen),pred_training,'.g',  alpha=0.3)
-    plt.plot(range(trainlen,trainlen+futureTotal),pred_tot,'k',  alpha=0.8, label='Free Running ESN')
+        plt.title(r'Echo State Network ' + ticker + ' Price Real vs. Predicted', fontsize=25)
+        plt.xlabel(r'Time (Days)', fontsize=20,labelpad=10)
+        plt.ylabel(r'Price ($)', fontsize=20,labelpad=10)
+        plt.legend(fontsize='x-large', loc='best')
+        sns.despine()
+        return 0
 
-    lo,hi = plt.ylim()
-    plt.plot([trainlen,trainlen],[lo+np.spacing(1),hi-np.spacing(1)],'k:', linewidth=4)
-
-    plt.title(r'Echo State Network ' + ticker + ' Price Real vs. Predicted', fontsize=25)
-    plt.xlabel(r'Time (Days)', fontsize=20,labelpad=10)
-    plt.ylabel(r'Price ($)', fontsize=20,labelpad=10)
-    plt.legend(fontsize='x-large', loc='best')
-    sns.despine()
-    return 0
-
-esn_predict(working_df_use, ticker, 2000)
-
-
-# plt.close()
-
-'''
-To do:
-
-- Loop test through multiple dates, sum pct_change for each
-- Use neural network to project next days price
-- Interpolate spline and find derivatives as indicators of buying opportunity
-
-'''
-
-
-# import matplotlib
-# matplotlib.use('TkAgg')
-# import matplotlib.pyplot as plt
-#
-# AMZN_plot = AMZN_test[(AMZN_test['Date'] > "2018-02-10") & (AMZN_test['Date'] < "2019-12-01")]
-# plt.plot(AMZN_plot['Date'], AMZN_plot['12_2_momentum'])
-# plt.show()
-# plt.close()
-
-
-# def pct_change_iloc(df):
-#     df['pct'] = 100 * (1 - df.iloc[0].Close / df.Close)
-#     return df
-#
-# def change_from_start(df, start_date, end_date):
-#     df = df[(df['Date'] > start_date) & (df['Date'] < end_date)]
-#     df_change_grp = df.groupby('Ticker').apply(pct_change_iloc)
-#     # df_change_pct = df_change_grp[(df_change_grp['pct'] > percent)]
-#     return df_change_grp
-#
-
+esn_predict(working_df_use, ticker, trainlen)
