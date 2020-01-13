@@ -6,6 +6,9 @@ Created on Mon Jan 14 12:50:56 2019
 @author: jasonrubenstein
 """
 
+print('This program will read in data from Yahoo Finance and store a sizable csv on your computer' + '\n' +
+      'It will take between 30 and 55 mins to run')
+
 import datetime
 from time import time, sleep
 import os
