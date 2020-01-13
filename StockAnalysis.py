@@ -217,6 +217,8 @@ print("Ticker: " + ticker + "\n" +
 print("Choose training length for ESN:\n")
 trainlen = input()
 
+exec(open("pyESN.py").read())
+
 def esn_predict(df, ticker, trainlen):
     sparsity = 0.2
     rand_seed = 23
