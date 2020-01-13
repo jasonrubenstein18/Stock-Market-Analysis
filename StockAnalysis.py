@@ -4,7 +4,6 @@ Created on Wed Dec 18 11:20:22 2019
 @author: jasonrubenstein
 """
 
-
 import datetime
 from time import time, sleep
 import os
@@ -35,7 +34,7 @@ pd.options.mode.chained_assignment = None  # default='warn'
 
 def read_data(chunksize):
     chunksize = chunksize
-    sd = pd.read_csv('~/Desktop/Python/QuantFin1/StockData/stock_data.csv', chunksize=chunksize, iterator=True)
+    sd = pd.read_csv(..., chunksize=chunksize, iterator=True)
     stock_data = pd.concat(sd, ignore_index=True)
     return stock_data
 
@@ -46,16 +45,14 @@ print("Most ancient date on file = " + str(stock_data['Date'].min())+"\n")
 
 
 print("Type 1 for Apple and Amazon only, or 0 for all stocks" + "\n" +
-      "Typing 0 may lead to increased run time")
+      "Typing 0 may lead to increased run time on derivative calculations")
 ticker_options = input()
 
+
 if ticker_options == 1:
-    working_df = stock_data[(stock_data['Ticker'] == "AAPL") | (stock_data['Ticker'] == "AMZN")]
+    stock_data = stock_data[(stock_data['Ticker'] == "AAPL") | (stock_data['Ticker'] == "AMZN")]
 else:
     pass
-
-# working_df = stock_data[(stock_data['Ticker'] == "AAPL") | (stock_data['Ticker'] == "AMZN")]
-
 
 def general_fixes(df):
     df.rename(columns={'Adj Close': 'Adj_Close'}, inplace=True)
@@ -153,8 +150,6 @@ working_df_use = derivatives(stock_data)
 gc.collect()
 
 
-
-
 print("Enter date (YYYY/MM/DD) for momentum optimization:\n")
 date = input()
 
@@ -167,7 +162,7 @@ print("dateID = " + str(working_df_use[(working_df_use['Date'] == date)]['DateID
 # dateID_end = str(int(dateID) + 3)
 # dates = list(range(dateID, dateID_end))
 
-print("Enter funds constraint (ideally around or below $2000, optimizing on single share basis):\n")
+print("Enter funds constraint (ideally below $2500, only optimizing on single share basis):\n")
 funds = int(input())
 
 print("Choose indicator (MACD or 30_day_12_2_momentum)?:\n")
@@ -212,7 +207,6 @@ def optimize_portfolio(df, date, funds, indicator):
     # full.columns = ['Ticker']
 
     # full = pd.merge(full, data, how='left', on='Ticker')
-    # full.to_csv('/Users/jasonrubenstein/Downloads/optimal_portfolio.csv')
     return print([portfolio, np.round(open_price,2), np.round(pct_change,2)], date)
 
 
@@ -226,7 +220,7 @@ print("Ticker: " + ticker + "\n" +
       "has " + str(len(stock_data[(stock_data['Ticker'] == ticker)])) + " rows in data set")
 
 print("Choose training length for ESN:\n")
-trainlen = input()
+trainlen = int(input())
 
 exec(open("pyESN.py").read())
 
@@ -289,3 +283,4 @@ def esn_predict(df, ticker, trainlen):
         return 0
 
 esn_predict(working_df_use, ticker, trainlen)
+
