@@ -219,7 +219,7 @@ ticker = str(input())
 print("Ticker: " + ticker + "\n" +
       "has " + str(len(stock_data[(stock_data['Ticker'] == ticker)])) + " rows in data set")
 
-print("Choose training length for ESN:\n")
+print("Choose training length for ESN (wont work if too close to full length):\n")
 trainlen = int(input())
 
 exec(open("pyESN.py").read())
