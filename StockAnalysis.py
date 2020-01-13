@@ -167,7 +167,7 @@ print("dateID = " + str(working_df_use[(working_df_use['Date'] == date)]['DateID
 # dateID_end = str(int(dateID) + 3)
 # dates = list(range(dateID, dateID_end))
 
-print("Enter funds constraint:\n")
+print("Enter funds constraint (ideally around or below $2000, optimizing on single share basis):\n")
 funds = int(input())
 
 print("Choose indicator (MACD or 30_day_12_2_momentum)?:\n")
