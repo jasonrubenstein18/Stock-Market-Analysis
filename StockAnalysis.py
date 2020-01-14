@@ -7,15 +7,14 @@ Created on Wed Dec 18 11:20:22 2019
 import datetime
 from time import time, sleep
 import os
-import pandas as pd
-import numpy as np
+import gc
 import time
 import glob
+import csaps
 import itertools
 from itertools import permutations
 from itertools import chain
 from datetime import datetime
-import csaps
 from scipy.interpolate import interp1d
 from scipy.interpolate import CubicSpline
 from scipy.interpolate import UnivariateSpline
@@ -23,21 +22,29 @@ from pulp import LpProblem, LpVariable, lpSum, LpMaximize, value, LpInteger
 import cvxpy
 import pstats
 import statistics
+import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
-import gc
+import multiprocessing as mp
 import seaborn as sns
-from matplotlib import rc
 import matplotlib
+from matplotlib import rc
+
+
 matplotlib.use('TkAgg')
 pd.options.mode.chained_assignment = None  # default='warn'
+
+print("Number of processors: ", mp.cpu_count())
+os.environ["MODIN_ENGINE"] = "dask"
+import modin.pandas as pd_modin
+
 
 
 def read_data(chunksize):
     chunksize = chunksize
-    sd = pd.read_csv(..., chunksize=chunksize, iterator=True)
-    stock_data = pd.concat(sd, ignore_index=True)
+    sd = pd_modin.read_csv('~/Desktop/Python/QuantFin1/StockData/stock_data.csv', chunksize=chunksize, iterator=True)
+    stock_data = pd_modin.concat(sd, ignore_index=True)
     return stock_data
-
 
 stock_data = read_data(100000)
 
