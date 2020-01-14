@@ -42,7 +42,7 @@ import modin.pandas as pd_modin
 
 def read_data(chunksize):
     chunksize = chunksize
-    sd = pd_modin.read_csv('~/Desktop/Python/QuantFin1/StockData/stock_data.csv', chunksize=chunksize, iterator=True)
+    sd = pd_modin.read_csv(..., chunksize=chunksize, iterator=True)
     stock_data = pd_modin.concat(sd, ignore_index=True)
     return stock_data
 
