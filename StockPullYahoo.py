@@ -9,18 +9,23 @@ command line program to pull stock data from yahoo finance and store as csv
 print('This program will read in data from Yahoo Finance and store a sizable csv on your computer' + '\n' +
       'It will take between 30 and 55 mins to run')
 
+
 import datetime
 from time import time, sleep
 import os
 import pandas as pd
+from pandas import DataFrame, HDFStore
 import yfinance as yf
 import numpy as np
-import timeit
+from numpy import savetxt
 import glob
 import itertools
-from itertools import permutations
-from itertools import chain
+from itertools import permutations, chain
+import datetime as dt
+import gc
+from concurrent import futures
 # import fix_yahoo_finance as yf
+# import timeit
 # from datetime import datetime
 # import matplotlib
 # matplotlib.use('TkAgg')
