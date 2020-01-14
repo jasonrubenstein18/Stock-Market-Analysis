@@ -38,6 +38,7 @@ def read_data(chunksize):
     stock_data = pd.concat(sd, ignore_index=True)
     return stock_data
 
+
 stock_data = read_data(100000)
 
 print("Most recent date on file = " + str(stock_data['Date'].max())+"\n")
@@ -202,12 +203,14 @@ def optimize_portfolio(df, date, funds, indicator):
     open_price = [open_price[p] for p in P if x[p].varValue]
     pct_change = [pct_change[p] for p in P if x[p].varValue]
     date = date
+    total = np.sum(pct_change)
 
     # full = pd.DataFrame(portfolio)
     # full.columns = ['Ticker']
 
     # full = pd.merge(full, data, how='left', on='Ticker')
-    return print([portfolio, np.round(open_price,2), np.round(pct_change,2)], date)
+    return print([portfolio, np.round(open_price,2), np.round(pct_change,2)], date + "\n",
+                 "% Gain/Loss on day = " + str(total))
 
 
 optimize_portfolio(working_df_use, date, funds, indicator)
