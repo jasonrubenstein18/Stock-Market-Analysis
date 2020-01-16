@@ -4,6 +4,8 @@ Created on Mon Jan 14 12:50:56 2019
 @author: jasonrubenstein
 
 command line program to pull stock data from yahoo finance and store as csv
+
+remember to update paths in line 37 and 77
 """
 
 print('This program will read in data from Yahoo Finance and store a sizable csv on your computer' + '\n' +
