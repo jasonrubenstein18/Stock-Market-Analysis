@@ -1,4 +1,4 @@
-# Make sure that you have all these libaries available to run the code successfully
+# Make sure that you have all these libraries available to run the code successfully
 import matplotlib.pyplot as plt
 import pandas as pd
 import datetime as dt
@@ -9,22 +9,23 @@ import tensorflow as tf # This code has been tested with TensorFlow 1.6
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras import backend
 from tensorflow.python.framework import ops
-ops.reset_default_graph()
-
-working_df_use = derivatives(working_df)
-
-AAPL = working_df_use[(working_df_use['Ticker'] == "AAPL")].reset_index(drop=True)
-
 import keras
 from keras.models import Sequential
 from keras.layers import Input, Dense, Softmax, Concatenate, LSTM, Dropout, CuDNNGRU
+from keras.layers import  CuDNNLSTM
 from keras import layers, models
 from numpy import array
 import random
+from time import time, sleep
+ops.reset_default_graph()
+
+exec(open("StockAnalysis.py").read())
+
+# AAPL = working_df_use[(working_df_use['Ticker'] == "AAPL")].reset_index(drop=True)
 
 random.seed(3)
-# tickers = ["AAPL", "AMZN"]
-ticker = "AMZN"
+print("Choose ticker for LSTMNet:\n")
+ticker = str(input())
 
 def split_sequences(sequence, n_steps):
     X, y = list(), list()
