@@ -4,6 +4,8 @@ Created on Wed Dec 18 11:20:22 2019
 @author: jasonrubenstein
 
 ESN plot from: https://github.com/mrdragonbear/EchoStateNetworks/blob/master/Echo_State_Networks.ipynb
+
+remember to update path in row 49
 """
 
 import datetime
