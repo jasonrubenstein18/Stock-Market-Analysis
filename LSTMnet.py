@@ -6,7 +6,7 @@ from numpy import array
 import datetime as dt
 import urllib.request, json
 import os
-import tensorflow as tf # This code has been tested with TensorFlow 1.6
+import tensorflow as tf
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras import backend
 from tensorflow.python.framework import ops
@@ -68,7 +68,7 @@ def LSTMnet(ticker):
     # fit model
     model.fit(X, y, batch_size=batch_size, epochs=epochs, verbose=verbose)
 
-    # demonstrate prediction
+    # prediction
     x_input = array([raw_seq[raw_seq.idxmax()-5], raw_seq[raw_seq.idxmax()-4], raw_seq[raw_seq.idxmax()-3]])
     x_input = x_input.reshape((1, steps, features))
     yhat = model.predict(x_input, verbose=1)
