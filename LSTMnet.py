@@ -1,20 +1,19 @@
 # Make sure that you have all these libraries available to run the code successfully
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
+from numpy import array
 import datetime as dt
 import urllib.request, json
 import os
-import numpy as np
 import tensorflow as tf # This code has been tested with TensorFlow 1.6
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras import backend
 from tensorflow.python.framework import ops
 import keras
 from keras.models import Sequential
-from keras.layers import Input, Dense, Softmax, Concatenate, LSTM, Dropout, CuDNNGRU
-from keras.layers import  CuDNNLSTM
+from keras.layers import Input, Dense, Softmax, Concatenate, LSTM, Dropout, CuDNNGRU, CuDNNLSTM
 from keras import layers, models
-from numpy import array
 import random
 from time import time, sleep
 ops.reset_default_graph()
@@ -80,37 +79,3 @@ def LSTMnet(ticker):
     return print(output), print(real)
 
 LSTMnet(ticker)
-
-
-
-# for pred_idx in range(trainlen, trainlen + futureTotal):
-#     running_mean = running_mean * decay + (1.0 - decay) * prediction[pred_idx - 1]
-#     run_avg_predictions.append(running_mean)
-#     mse_errors.append((run_avg_predictions[-1] - trainlen[pred_idx]) ** 2)
-#     run_avg_x.append(date)
-# print('MSE error for EMA averaging: %.5f' % (0.5 * np.mean(mse_errors)))
-
-# model = Sequential()
-# model.add(LSTM(units=50, return_sequences=True, input_shape=(features_set.shape[1], 1)))
-
-#
-# apple_training_processed = AAPL[["Date", "Adj_Close"]].set_index("Date")
-#
-#
-# from sklearn.preprocessing import MinMaxScaler
-# scaler = MinMaxScaler(feature_range = (0, 1))
-#
-# apple_training_scaled = scaler.fit_transform(apple_training_processed)
-#
-# features_set = []
-# labels = []
-# for i in range(271, 5420):
-#     features_set.append(apple_training_scaled[i-60:i, 0])
-#     labels.append(apple_training_scaled[i, 0])
-#
-# features_set, labels = np.array(features_set), np.array(labels)
-#
-# features_set = np.reshape(features_set, (features_set.shape[0], features_set.shape[1], 1))
-
-
-
