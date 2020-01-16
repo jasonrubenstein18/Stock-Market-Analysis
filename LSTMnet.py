@@ -1,4 +1,5 @@
 # Make sure that you have all these libraries available to run the code successfully
+# Remember to update path in row 27
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -17,10 +18,17 @@ from keras import layers, models
 import random
 from time import time, sleep
 ops.reset_default_graph()
+os.environ["MODIN_ENGINE"] = "dask"
+import modin.pandas as pd_modin
+ops.reset_default_graph()
 
-exec(open("StockAnalysis.py").read())
+def read_data(chunksize):
+    chunksize = chunksize
+    sd = pd_modin.read_csv('...', chunksize=chunksize, iterator=True)
+    stock_data = pd_modin.concat(sd, ignore_index=True)
+    return stock_data
 
-# AAPL = working_df_use[(working_df_use['Ticker'] == "AAPL")].reset_index(drop=True)
+stock_data = read_data(100000)
 
 random.seed(3)
 print("Choose ticker for LSTMNet:\n")
