@@ -1,4 +1,4 @@
-#Initial commit
+// Initial commit; once code is done in Python will transition to C++ for performance
 
 
 #include <iostream>
@@ -15,7 +15,7 @@ using namespace std;
 int main() {
 	
 	ifstream ip;
-	ip.open("~/Downloads/stock_data.csv");
+	ip.open("...");
 
 	if(!ip.is_open()) std::cout << "ERROR: File Open" << "\n";
 
