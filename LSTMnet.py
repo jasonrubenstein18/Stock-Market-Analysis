@@ -1,5 +1,5 @@
 # Make sure that you have all these libraries available to run the code successfully
-# Remember to update path in row 27
+# Remember to update path in row 27; run from command line
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
