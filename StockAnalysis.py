@@ -5,7 +5,7 @@ Created on Wed Dec 18 11:20:22 2019
 
 ESN plot from: https://github.com/mrdragonbear/EchoStateNetworks/blob/master/Echo_State_Networks.ipynb
 
-remember to update path in row 49
+remember to update path in row 49; run from command line
 """
 
 import datetime
