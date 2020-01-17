@@ -107,26 +107,26 @@ def macd(df):
 def twelve_two_month_price(df):
     df = simple_momentum(df)
     df = macd(df)
-    if df.groupby("Ticker")["Adj_Close"].shift(261) is not None:
-        df.loc[:, "12_month_price"] = df.groupby("Ticker")["Adj_Close"].shift(261)
-    elif df.groupby("Ticker")["Adj_Close"].shift(260) is not None:
-        df.loc[:, "12_month_price"] = df.groupby("Ticker")["Adj_Close"].shift(260)
+    if df.groupby("Ticker")["Adj_Close"].shift(263) is not None:
+        df.loc[:, "12_month_price"] = df.groupby("Ticker")["Adj_Close"].shift(263)
     elif df.groupby("Ticker")["Adj_Close"].shift(262) is not None:
         df.loc[:, "12_month_price"] = df.groupby("Ticker")["Adj_Close"].shift(262)
+    elif df.groupby("Ticker")["Adj_Close"].shift(261) is not None:
+        df.loc[:, "12_month_price"] = df.groupby("Ticker")["Adj_Close"].shift(261)
     else:
-        df.loc[:, "12_month_price"] = df.groupby("Ticker")["Adj_Close"].shift(263)
-    if df.groupby("Ticker")["Adj_Close"].shift(44) is not None:
-        df.loc[:, "2_month_price"] = df.groupby("Ticker")["Adj_Close"].shift(44)
+        df.loc[:, "12_month_price"] = df.groupby("Ticker")["Adj_Close"].shift(260)
+    #
+    if df.groupby("Ticker")["Adj_Close"].shift(46) is not None:
+        df.loc[:, "2_month_price"] = df.groupby("Ticker")["Adj_Close"].shift(46)
     elif df.groupby("Ticker")["Adj_Close"].shift(45) is not None:
         df.loc[:, "2_month_price"] = df.groupby("Ticker")["Adj_Close"].shift(45)
-    elif df.groupby("Ticker")["Adj_Close"].shift(43) is not None:
-        df.loc[:, "2_month_price"] = df.groupby("Ticker")["Adj_Close"].shift(43)
+    elif df.groupby("Ticker")["Adj_Close"].shift(44) is not None:
+        df.loc[:, "2_month_price"] = df.groupby("Ticker")["Adj_Close"].shift(44)
     else:
-        df.loc[:, "2_month_price"] = df.groupby("Ticker")["Adj_Close"].shift(46)
+        df.loc[:, "2_month_price"] = df.groupby("Ticker")["Adj_Close"].shift(43)
     df['30_day_12_2_momentum'] = 0
     df['12_2_change'] = (df['2_month_price'] - df['12_month_price']) / df['12_month_price']
     df['12_2_momentum'] = (df['2_month_price'] - df['12_month_price'])
-    time.sleep(1)
     df.loc[:, "30_day_12_2_momentum"] = df.groupby("Ticker")["12_2_momentum"].shift(30)
     # Add buy signal
     df['buy'] = np.where(df['pct_change'] > 0, 1, 0)
