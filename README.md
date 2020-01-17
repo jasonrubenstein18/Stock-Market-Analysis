@@ -4,8 +4,8 @@ Stock forecasting and other trading techniques
 
 From Command Line
 
-    1) python StockPullYahoo.py
+    1) python StockPullYahoo.py # retrieves daily stock data
     
-    2) python StockMarketAnalysis.py
+    2) python StockMarketAnalysis.py # Adds indicators and general fixes to dataset, run momentum optimizer and ESN
     
-    3) python LSTMNet.py
+    3) python LSTMNet.py # Runs LSTM net algo
