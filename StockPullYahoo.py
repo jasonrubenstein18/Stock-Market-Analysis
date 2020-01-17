@@ -34,7 +34,7 @@ from concurrent import futures
 # import matplotlib.pyplot as plt
 
 
-path = '...'
+path = '.../*.txt'
 stock_files = glob.glob(path)
 
 def get_txt(files):
