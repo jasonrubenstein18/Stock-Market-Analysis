@@ -1,4 +1,4 @@
-// Initial commit; once code is done in Python will transition to C++ for performance
+// Initial commit;
 
 
 #include <iostream>
