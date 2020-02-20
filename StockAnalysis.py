@@ -77,16 +77,16 @@ def general_fixes(df):
 
 def simple_momentum(df):
     df = general_fixes(df)
-    df["12_Day_Monemntum"] = 0
-    df["28_Day_Monemntum"] = 0
-    df["270_Day_Monemntum"] = 0
-    df.loc[:, "12_Day_Monemntum"] = (
+    df["12_Day_Momentum"] = 0
+    df["28_Day_Momentum"] = 0
+    df["270_Day_Momentum"] = 0
+    df.loc[:, "12_Day_Momentum"] = (
             df.groupby("Ticker")["Adj_Close"].shift(1) / df.groupby("Ticker")["Adj_Close"].shift(
             12) - 1)
-    df.loc[:, "26_Day_Monemntum"] = (
+    df.loc[:, "26_Day_Momentum"] = (
             df.groupby("Ticker")["Adj_Close"].shift(1) / df.groupby("Ticker")["Adj_Close"].shift(
             26) - 1)
-    df.loc[:, "261_Day_Monemntum"] = (
+    df.loc[:, "261_Day_Momentum"] = (
             df.groupby("Ticker")["Adj_Close"].shift(1) / df.groupby("Ticker")["Adj_Close"].shift(
             261) - 1)
     return df
