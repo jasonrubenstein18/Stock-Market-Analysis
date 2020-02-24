@@ -32,12 +32,9 @@ pd.options.mode.chained_assignment = None  # default='warn'
 
 print("Number of processors: ", mp.cpu_count())
 
-exec(open("pyESN.py").read())
-
-
 def read_data(chunksize):
     chunksize = chunksize
-    sd = pd.read_csv('~/Desktop/Python/QuantFin1/StockData/stock_data2020-02-14.csv', chunksize=chunksize, iterator=True)
+    sd = pd.read_csv('___.csv', chunksize=chunksize, iterator=True)
     stock_data = pd.concat(sd, ignore_index=True)
     return stock_data
 
@@ -152,15 +149,6 @@ def derivatives(df):
     return df
 
 
-# print("Choose your ticker\n")
-# test = twelve_two_month_price(working_df[(working_df['Ticker'] == input())])
-#
-# test['buy'] = np.where(test['30_day_12_2_momentum'] > 0, 1, 0)
-# buys = test[(test['buy'] == 1)]
-#
-# print(test['pct_change'].sum())
-
-
 working_df_use = derivatives(stock_data)
 
 gc.collect()
@@ -171,14 +159,16 @@ del working_df_use['DateID'], working_df_use['Prev_Close'], working_df_use['12_D
     working_df_use['270_Day_Momentum'], working_df_use['26_Day_Momentum']
 
 
-working_df_use.to_csv('/Users/jasonrubenstein/Desktop/Python/QuantFin1/StockData/stock_data_testing.csv', index=0)
+# Write file if you don't want to re-run derivatives later
+working_df_use.to_csv('...csv', index=0)
 
 
+# adding constraint information for integer programming
 print("Enter funds constraint (ideally below $2500, only optimizing on single share basis):\n")
 funds = int(input())
 
 print("Choose indicator (MACD or 30_day_12_2_momentum)?:\n")
-indicator = "MACD"
+indicator = input()
 
 print("Optimization Start Date:\n")
 syear, smonth, sday = int(input()), int(input()), int(input())
@@ -259,12 +249,12 @@ for i in dates_list:
 fig = plotly_express.scatter(returns, x="Date", y="GainLoss", )
 fig.show()
 
-print(sum(returns['Return']))
+# print(sum(returns['Return']))
 
-twelve_two_return = returns
-twelve_two_return['cumulative_return'] = 0
-twelve_two_return['cumulative_return'][0] = 2500
+# twelve_two_return = returns
+# twelve_two_return['cumulative_return'] = 0
+# twelve_two_return['cumulative_return'][0] = 2500
 
-twelve_two_return['new_funds'] = twelve_two_return.cumulative_return.shift(1) * (1+twelve_two_return.Return.shift(1))
+# twelve_two_return['new_funds'] = twelve_two_return.cumulative_return.shift(1) * (1+twelve_two_return.Return.shift(1))
 
-macd_returns = returns
+# macd_returns = returns
