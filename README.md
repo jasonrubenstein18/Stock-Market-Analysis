@@ -6,6 +6,6 @@ From Command Line
 
     1) python StockPullYahoo.py # retrieves daily stock data
     
-    2) python StockMarketAnalysis.py # Adds indicators and general fixes, run momentum optimizer and ESN
+    2) python OptimizeBacktest.py # Adds indicators and general fixes, run momentum optimizer and ESN
     
     3) python LSTMNet.py # Runs LSTM net algo
