@@ -33,7 +33,7 @@ exec(open("pyESN.py").read())
 
 def read_data(chunksize):
     chunksize = chunksize
-    sd = pd.read_csv('~/Desktop/Python/QuantFin1/StockData/stock_data2020-03-19.csv', chunksize=chunksize, iterator=True)
+    sd = pd.read_csv('...Path To File stored from StockPullYahoo...', chunksize=chunksize, iterator=True)
     stock_data = pd.concat(sd, ignore_index=True)
     return stock_data
 
@@ -157,7 +157,7 @@ def derivatives(df):
 # print(test['pct_change'].sum())
 
 # Russell 1000 stocks only
-russ = pd.read_csv('~/Desktop/Python/QuantFin1/Russell1000Stocks.csv', sep=",")
+russ = pd.read_csv('...Path To Russell 1000 stocks dataset...', sep=",")
 
 working_data_all = twelve_two_month_price(stock_data)
 
