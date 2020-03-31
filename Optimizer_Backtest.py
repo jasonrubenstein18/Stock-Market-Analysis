@@ -323,9 +323,3 @@ fig = plotly_express.line(returns, x="Date", y="CumulativeGainLoss")
 fig.show()
 
 print(sum(returns['Return']))
-
-twelve_two_return = returns
-twelve_two_return['cumulative_return'] = 0
-twelve_two_return['cumulative_return'][0] = 2500
-
-twelve_two_return['new_funds'] = twelve_two_return.cumulative_return.shift(1) * (1+twelve_two_return.Return.shift(1))
