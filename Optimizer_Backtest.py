@@ -64,7 +64,6 @@ else:
 
 
 
-# 8.93 secs
 def general_fixes(df):
     df.rename(columns={'Adj Close': 'Adj_Close'}, inplace=True)
     df['DateID'] = pd.factorize(df['Date'])[0]
@@ -77,7 +76,6 @@ def general_fixes(df):
     return df
 
 
-# 33.55 secs
 def simple_momentum(df):
     df = general_fixes(df)
     df["12_Day_Momentum"] = 0
@@ -95,7 +93,6 @@ def simple_momentum(df):
     return df
 
 
-# 65.11 secs
 def macd(df):
     df['12_day_ema'] = 0
     df['26_day_ema'] = 0
@@ -110,7 +107,6 @@ def macd(df):
     return df
 
 
-# 35.91 secs
 def twelve_two_month_price(df):
     df = simple_momentum(df)
     df = macd(df)
@@ -140,23 +136,6 @@ def twelve_two_month_price(df):
     return df
 
 
-# # 420.26 secs
-# def derivatives(df):
-#     df = twelve_two_month_price(df)
-#     # MACD
-#     df['MACD_d1_velo'] = df.groupby('Ticker')['MACD'].diff()
-#     df['MACD_d2_acc'] = df.groupby('Ticker')['MACD_d1_velo'].diff()
-#     df['MACD_d3_jerk'] = df.groupby('Ticker')['MACD_d2_acc'].diff()
-#     # 12_2 - 30 day µ
-#     df['12_2_velo'] = df.groupby('Ticker')['30_day_12_2_momentum'].diff()
-#     df['12_2_acc'] = df.groupby('Ticker')['12_2_velo'].diff()
-#     df['12_2_jerk'] = df.groupby('Ticker')['12_2_acc'].diff()
-#     # raw Adj_Close
-#     df['adj_close_velo'] = df.groupby('Ticker')['Adj_Close'].diff()
-#     df['adj_close_acc'] = df.groupby('Ticker')['adj_close_velo'].diff()
-#     df['adj_close_jerk'] = df.groupby('Ticker')['adj_close_acc'].diff()
-#     return df
-
 
 def mu_pct_change(df):
     df2 = general_fixes(df)
@@ -166,18 +145,7 @@ def mu_pct_change(df):
     df2["100_day_µ_volume"] = ema_volume.reset_index(level=0, drop=True)
     return df2
 
-
-def bollinger_bands(df):
-    # trailing  20 day SMA mean & std
-    # upper band
-    # lower band
-    # price not above 2 std
-    # buy when it crosses up over lower band
-
-
-
-# working_data_all = twelve_two_month_price(stock_data)
-
+# Choose whatever indicators you want to use or functions to run
 working_data_all = mu_pct_change(stock_data)
 
 ###### FUNDS ######
@@ -228,7 +196,7 @@ bad_tickers = ["TWLO", "INVH", "VST", "FHB", "HGV", "ARD"]
 # include only dates in desired range where the indicator is not null
 usable_df = working_df_use[(working_df_use['Date'].isin(dates_list))
                            & (pd.notnull(working_df_use[indicator]))
-                           & (working_df_use['100_day_µ_volume'] > 250000)
+                           & (working_df_use['100_day_µ_volume'] > 250000) # volume definition. To add VWMA
                            & (~working_df_use['Ticker'].isin(bad_tickers)).reset_index(drop=True)]
 
 # remove unnecessary columns
