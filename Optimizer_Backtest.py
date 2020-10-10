@@ -15,33 +15,40 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import multiprocessing as mp
-import seaborn as sns
 import matplotlib
 from matplotlib import rc
-import pulp
 import plotly
 import plotly_express
 from multiprocessing import Pool
 
-matplotlib.use('TkAgg')
-pd.options.mode.chained_assignment = None  # default='warn'
 
-print("Number of processors: ", mp.cpu_count())
-
-exec(open("pyESN.py").read())
+def startup():
+    matplotlib.use('TkAgg')
+    pd.options.mode.chained_assignment = None  # default='warn'
+    print("Number of processors: ", mp.cpu_count())
+    exec(open("pyESN.py").read())
 
 
 def read_data(chunksize):
-    chunksize = chunksize
-    sd = pd.read_csv('...Path To File stored from StockPullYahoo...', chunksize=chunksize, iterator=True)
-    stock_data = pd.concat(sd, ignore_index=True)
-    return stock_data
+    cols = ['Ticker', 'Date',	'Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
+    full_datas = pd.DataFrame(columns=cols)
+    path = '/Users/jasonrubenstein/Desktop/Python/QuantFin1/StockData/*.csv'
+    stock_files = glob.glob(path)
+    for i in stock_files:
+        sd = pd.read_csv(i, chunksize=chunksize,
+                         iterator=True)
+        stock_data = pd.concat(sd, ignore_index=True)
+        full_datas = full_datas.append(stock_data, ignore_index=True)
+    # sd = pd.read_csv('~/Desktop/Python/QuantFin1/StockData/stock_data2020-03-19.csv',
+    #                  chunksize=chunksize, iterator=True)
+    # stock_data = pd.concat(sd, ignore_index=True)
+    return full_datas, print("Most recent date on file = " + str(full_datas['Date'].max()) + "\n")
+    print("Most ancient date on file = " + str(full_datas['Date'].min()) + "\n")
+
 
 
 stock_data = read_data(100000)
 
-print("Most recent date on file = " + str(stock_data['Date'].max())+"\n")
-print("Most ancient date on file = " + str(stock_data['Date'].min())+"\n")
 
 
 ticker_options = 0
@@ -56,13 +63,16 @@ else:
     pass
 
 
+
 # 8.93 secs
 def general_fixes(df):
     df.rename(columns={'Adj Close': 'Adj_Close'}, inplace=True)
     df['DateID'] = pd.factorize(df['Date'])[0]
     df['Prev_Close'] = df.groupby("Ticker")["Adj_Close"].shift(1)
     df['pct_change'] = 0
-    df['pct_change'] = (df['Adj_Close'] - df['Prev_Close'])/df['Prev_Close'] * 100
+    df['pct_change'] = (df['Adj_Close'] - df['Open'])/df['Open'] * 100
+    df['Prev_pct_change'] = df.groupby("Ticker")["pct_change"].shift(1)
+    df['Prev_volume'] = df.groupby("Ticker")["Volume"].shift(1)
     df["Date"] = pd.to_datetime(df["Date"])
     return df
 
@@ -130,63 +140,66 @@ def twelve_two_month_price(df):
     return df
 
 
-# 420.26 secs
-def derivatives(df):
-    df = twelve_two_month_price(df)
-    # MACD
-    df['MACD_d1_velo'] = df.groupby('Ticker')['MACD'].diff()
-    df['MACD_d2_acc'] = df.groupby('Ticker')['MACD_d1_velo'].diff()
-    df['MACD_d3_jerk'] = df.groupby('Ticker')['MACD_d2_acc'].diff()
-    # 12_2 - 30 day µ
-    df['12_2_velo'] = df.groupby('Ticker')['30_day_12_2_momentum'].diff()
-    df['12_2_acc'] = df.groupby('Ticker')['12_2_velo'].diff()
-    df['12_2_jerk'] = df.groupby('Ticker')['12_2_acc'].diff()
-    # raw Adj_Close
-    df['adj_close_velo'] = df.groupby('Ticker')['Adj_Close'].diff()
-    df['adj_close_acc'] = df.groupby('Ticker')['adj_close_velo'].diff()
-    df['adj_close_jerk'] = df.groupby('Ticker')['adj_close_acc'].diff()
-    return df
+# # 420.26 secs
+# def derivatives(df):
+#     df = twelve_two_month_price(df)
+#     # MACD
+#     df['MACD_d1_velo'] = df.groupby('Ticker')['MACD'].diff()
+#     df['MACD_d2_acc'] = df.groupby('Ticker')['MACD_d1_velo'].diff()
+#     df['MACD_d3_jerk'] = df.groupby('Ticker')['MACD_d2_acc'].diff()
+#     # 12_2 - 30 day µ
+#     df['12_2_velo'] = df.groupby('Ticker')['30_day_12_2_momentum'].diff()
+#     df['12_2_acc'] = df.groupby('Ticker')['12_2_velo'].diff()
+#     df['12_2_jerk'] = df.groupby('Ticker')['12_2_acc'].diff()
+#     # raw Adj_Close
+#     df['adj_close_velo'] = df.groupby('Ticker')['Adj_Close'].diff()
+#     df['adj_close_acc'] = df.groupby('Ticker')['adj_close_velo'].diff()
+#     df['adj_close_jerk'] = df.groupby('Ticker')['adj_close_acc'].diff()
+#     return df
 
 
-# print("Choose your ticker\n")
-# test = twelve_two_month_price(working_df[(working_df['Ticker'] == input())])
-#
-# test['buy'] = np.where(test['30_day_12_2_momentum'] > 0, 1, 0)
-# buys = test[(test['buy'] == 1)]
-#
-# print(test['pct_change'].sum())
-
-# Russell 1000 stocks only
-russ = pd.read_csv('...Path To Russell 1000 stocks dataset...', sep=",")
-
-working_data_all = twelve_two_month_price(stock_data)
+def mu_pct_change(df):
+    df2 = general_fixes(df)
+    ema_pct_change = df.groupby("Ticker").apply(lambda x: x["Prev_pct_change"].ewm(span=100).mean())
+    df2["100_day_µ_pct_change"] = ema_pct_change.reset_index(level=0, drop=True)
+    ema_volume = df.groupby("Ticker").apply(lambda x: x["Prev_volume"].ewm(span=100).mean())
+    df2["100_day_µ_volume"] = ema_volume.reset_index(level=0, drop=True)
+    return df2
 
 
-# del working_df_use['DateID'], working_df_use['Prev_Close'], working_df_use['12_Day_Momentum'], \
-#     working_df_use['2_month_price'],\
-#     working_df_use['270_Day_Momentum'], working_df_use['26_Day_Momentum']
-#
-#
-# working_df_use.to_csv('/Users/jasonrubenstein/Desktop/Python/QuantFin1/StockData/stock_data_testing.csv', index=0)
+def bollinger_bands(df):
+    # trailing  20 day SMA mean & std
+    # upper band
+    # lower band
+    # price not above 2 std
+    # buy when it crosses up over lower band
 
 
-print("Enter funds constraint (don't make super high since max n-qty of individual stonk):\n")
-funds = int(input())
 
-print("Choose indicator (MACD or 30_day_12_2_momentum)?:\n")
-indicator = str(input())
+# working_data_all = twelve_two_month_price(stock_data)
 
-print("Optimization Start Date:\n")
-syear, smonth, sday = int(input()), int(input()), int(input())
-sdate = date(syear, smonth, sday)
+working_data_all = mu_pct_change(stock_data)
 
-print("Optimization End Date:\n")
-eyear, emonth, eday = int(input()), int(input()), int(input())
-edate = date(eyear, emonth, eday)
+###### FUNDS ######
+print("Enter funds constraint (don't make super high since max n-qty of individual stock):\n")
+FUNDS = int(input())
+
+###### INDICATOR ######
+print("Choose indicator (MACD, 30_day_12_2_momentum, 100_day_µ_pct_change)?:\n")
+INDICATOR = str(input())
+
+###### START DATE ######
+print("Start Date (year * month * day):\n")
+SYEAR, SMONTH, SDAY = int(input()), int(input()), int(input())
+sdate = date(SYEAR, SMONTH, SDAY)
+
+###### END DATE ######
+print("End Date (year * month * day):\n")
+EYEAR, EMONTH, EDAY = int(input()), int(input()), int(input())
+edate = date(EYEAR, EMONTH, EDAY)
 
 daterange = pd.date_range(sdate, edate)
 dates_list = list(daterange.strftime("%Y-%m-%d"))
-
 
 # Memory check
 # for dtype in ['float', 'int', 'object', 'datetime']:
@@ -195,20 +208,14 @@ dates_list = list(daterange.strftime("%Y-%m-%d"))
 #     mean_usage_mb = mean_usage_b / 1024 ** 2
 #     print("Average memory usage for {} columns: {:03.2f} MB".format(dtype,mean_usage_mb))
 
-# remove inconsistent tickers (with 1000+% change on single day)
-# bad_tickers = working_data_all[(working_data_all['pct_change'] > 1000)]['Ticker'].unique()
-# working_df_use = working_data_all[~working_data_all['Ticker'].isin(bad_tickers)].reset_index(drop=True)
-
+# Russell 1000 stocks only
+russ = pd.read_csv('~/Desktop/Python/QuantFin1/Russell1000Stocks.csv', sep=",")
 
 working_df_use = working_data_all[(working_data_all['Ticker'].isin(russ['Stock']))].reset_index(drop=True)
 
 # Define the dataframe to be appended; run from here
-cols = ['Date', 'DailyGainLoss', 'OpenCost', 'CumulativeGainLoss', 'PosNeg']
-returns = pd.DataFrame(columns=cols)
-
-# cols_p = ['Date', 'Tickers']
-# portfolio = pd.DataFrame(columns=cols_p)
-# full_returns = pd.DataFrame(columns=cols)
+cols = ['Date', 'DailyGainLoss', 'OpenCost', 'CumulativeGainLoss', 'PosNeg', 'Tickers']
+book = pd.DataFrame(columns=cols)
 
 # Set iterator k equal to 0
 k = 0
@@ -216,14 +223,20 @@ k = 0
 # number of unique dates in dataframe
 unique_dates = len(working_df_use[working_df_use['Date'].isin(dates_list)]['Date'].unique())
 
+
+bad_tickers = ["TWLO", "INVH", "VST", "FHB", "HGV", "ARD"]
 # include only dates in desired range where the indicator is not null
 usable_df = working_df_use[(working_df_use['Date'].isin(dates_list))
                            & (pd.notnull(working_df_use[indicator]))
-                           & (working_df_use['Volume'] > 50000)].reset_index(drop=True)
+                           & (working_df_use['100_day_µ_volume'] > 250000)
+                           & (~working_df_use['Ticker'].isin(bad_tickers)).reset_index(drop=True)]
 
 # remove unnecessary columns
+# usable_df = usable_df[["Ticker", "Date", "Open", "Volume", "Adj_Close",
+#                        "pct_change", "MACD", "30_day_12_2_momentum"]]
+
 usable_df = usable_df[["Ticker", "Date", "Open", "Volume", "Adj_Close",
-                       "pct_change", "MACD", "30_day_12_2_momentum"]]
+                       "pct_change", indicator]]
 print(len(usable_df))
 print(len(usable_df['Ticker'].unique()))
 
@@ -235,17 +248,16 @@ print(len(usable_df['Ticker'].unique()))
 # works but time complexity is an issue. It's erratic not necessarily bad
 
 for i in dates_list:
-    usable_df_new = usable_df[~usable_df['Date'].isin(returns['Date'])].reset_index(drop=True)
-    if indicator == "MACD":
-        date_only = usable_df_new[(usable_df_new['Date'] == i)
-                                  & (usable_df_new[indicator] > 0)].reset_index(drop=True)
-        data = pd.concat([date_only]*5, ignore_index=True).reset_index()
-        # data.rename(columns={'index': 'row_id'}, inplace=True)
-    else:
-        date_only = usable_df_new[(usable_df_new['Date'] == i)
-                                  & (usable_df_new[indicator] > 0)].reset_index(drop=True)
-        data = pd.concat([date_only]*5, ignore_index=True).reset_index()
-        # data.rename(columns={'index': 'row_id'}, inplace=True)
+    usable_df_new = usable_df[~usable_df['Date'].isin(book['Date'])].reset_index(drop=True)
+    # if indicator == "MACD":
+    date_only = usable_df_new[(usable_df_new['Date'] == i)
+                              & (usable_df_new[indicator] > 0)].reset_index(drop=True)
+    data = pd.concat([date_only]*20, ignore_index=True).reset_index(drop=True)
+    # data.rename(columns={'index': 'row_id'}, inplace=True)
+    # else:
+    #     date_only = usable_df_new[(usable_df_new['Date'] == i)
+    #                               & (usable_df_new[indicator] > 0)].reset_index(drop=True)
+    #     data = pd.concat([date_only]*5, ignore_index=True).reset_index()
     if not data.empty:
         start_time = time()
         ticker, open_price, pct_change, metric = data['Ticker'], data['Open'], data['pct_change'], data[indicator]
@@ -255,21 +267,21 @@ for i in dates_list:
         # metric = data[indicator]
         P = range(len(ticker))
     # add in funds determinant based upon prior few days % return (if bunch of negatives invest less of funds)
-        if len(returns) < 10:
-            returns['FundSignal'] = 0
+        if len(book) < 10:
+            book['FundSignal'] = 0
         else:
-            returns['FundSignal'] = returns.PosNeg.rolling(window=10).mean().sort_index(level=1).values
-            # returns['FundSignal'].fillna(0, inplace=True)
-        if len(returns) < 1:
+            book['FundSignal'] = book.PosNeg.rolling(window=10).mean().sort_index(level=1).values
+            # book['FundSignal'].fillna(0, inplace=True)
+        if len(book) < 1:
             S = float(funds)
-        elif len(returns) > 9 and abs(returns.FundSignal.iat[-1]) > float(0.5):
+        elif len(book) > 9 and abs(book.FundSignal.iat[-1]) > float(0.5):
             # use half of funds available
-            # returns['FundSignal'].fillna(0, inplace=True)
-            S = (float(funds) + float(returns.CumulativeGainLoss.iat[-1]))*.5
+            # book['FundSignal'].fillna(0, inplace=True)
+            S = (float(funds) + float(book.CumulativeGainLoss.iat[-1]))*.5
         else:
-            S = float(funds)+float(returns.CumulativeGainLoss.iat[-1])
+            S = float(funds)+float(book.CumulativeGainLoss.iat[-1])
 
-    # Moving average of last few days returns, with binary pos/neg. (e.g. if µ last 5 days < -.6, use half of capital)
+    # Moving average of last few days book, with binary pos/neg. (e.g. if µ last 5 days < -.6, use half of capital)
         prob = LpProblem("Optimal_Portfolio", LpMaximize)
         x = LpVariable.matrix("x", list(P), 0, 1, LpInteger)
         prob += sum(metric[p] * x[p] for p in P)
@@ -288,20 +300,26 @@ for i in dates_list:
         # gains.add(total_yield)
         # cost.add(total_open_price)
         # gc.disable()
-        returns = returns.append({
+        book = book.append({
             'Date': i,
             'DailyGainLoss': total_yield,
-            'OpenCost': total_open_price
+            'OpenCost': total_open_price,
+            'Tickers': np.unique(ticker)
             },
             ignore_index=True)
-        returns['CumulativeGainLoss'] = returns['DailyGainLoss'].cumsum()
-        returns['PosNeg'] = np.where(returns['DailyGainLoss'] < 0,
+        # book['Tickers'] = book.apply(lambda r: tuple(r), axis=1).apply(ticker)
+        book['CumulativeGainLoss'] = book['DailyGainLoss'].cumsum()
+        book['PosNeg'] = np.where(book['DailyGainLoss'] < -10,
                                      -1,
                                      0)
         end_time = time()
         k += 1
         elapsed_time = float(end_time - start_time)
         print('{} out of {} dates optimized in {} seconds'.format(k, unique_dates, round(elapsed_time, 2)))
+        print(date_only.loc[date_only[indicator].idxmax()])
+        print(date_only.loc[date_only['pct_change'].idxmax()])
+        # print('{} out of {} dates optimized in {} seconds'.format(k, unique_dates, round(elapsed_time, 2)))
+
         if elapsed_time > 10:
             try:
                 sleep(15)
@@ -319,7 +337,9 @@ for i in dates_list:
 # end run
 
 
-fig = plotly_express.line(returns, x="Date", y="CumulativeGainLoss")
+fig = plotly_express.line(book, x="Date", y="CumulativeGainLoss")
 fig.show()
 
-print(sum(returns['Return']))
+book = book.fillna(0)
+print("Total Return From {} to {} = ".format(sdate, edate) + str(round(sum(book['DailyGainLoss']),2)))
+print("Total Return From {} to {} = ".format(sdate, edate) + str(round(sum(book['DailyGainLoss'])/funds*100,2))+"%")
