@@ -209,7 +209,7 @@ print(len(usable_df))
 print(len(usable_df['Ticker'].unique()))
 
 # remove rows with date that has already been optimized
-# usable_df_new = usable_df[~usable_df['Date'].isin(results['Date'])].reset_index(drop=True)
+# usable_df_new = usable_df[~usable_df['Date'].isin(book['Date'])].reset_index(drop=True)
 
 # print(len(usable_df_new))
 
@@ -220,7 +220,7 @@ for i in dates_list:
     # if indicator == "MACD":
     date_only = usable_df_new[(usable_df_new['Date'] == i)
                               & (usable_df_new[indicator] > 0)].reset_index(drop=True)
-    data = pd.concat([date_only]*20, ignore_index=True).reset_index(drop=True)
+    data = pd.concat([date_only]*20, ignore_index=True).reset_index(drop=True) # max 20 shares of any individual stock per date
     # data.rename(columns={'index': 'row_id'}, inplace=True)
     # else:
     #     date_only = usable_df_new[(usable_df_new['Date'] == i)
@@ -249,7 +249,7 @@ for i in dates_list:
         else:
             S = float(funds)+float(book.CumulativeGainLoss.iat[-1])
 
-    # Moving average of last few days book, with binary pos/neg. (e.g. if µ last 5 days < -.6, use half of capital)
+    # Moving average of last few days book, with binary pos/neg. (e.g. if µ last 5 days < -.6, use half of available capital)
         prob = LpProblem("Optimal_Portfolio", LpMaximize)
         x = LpVariable.matrix("x", list(P), 0, 1, LpInteger)
         prob += sum(metric[p] * x[p] for p in P)
