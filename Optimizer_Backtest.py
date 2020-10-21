@@ -195,7 +195,7 @@ unique_dates = len(working_df_use[working_df_use['Date'].isin(dates_list)]['Date
 bad_tickers = ["TWLO", "INVH", "VST", "FHB", "HGV", "ARD"]
 # include only dates in desired range where the indicator is not null
 usable_df = working_df_use[(working_df_use['Date'].isin(dates_list))
-                           & (pd.notnull(working_df_use[indicator]))
+                           & (pd.notnull(working_df_use[INDICATOR]))
                            & (working_df_use['100_day_µ_volume'] > 250000) # volume definition. To add VWMA
                            & (~working_df_use['Ticker'].isin(bad_tickers)).reset_index(drop=True)]
 
@@ -204,14 +204,9 @@ usable_df = working_df_use[(working_df_use['Date'].isin(dates_list))
 #                        "pct_change", "MACD", "30_day_12_2_momentum"]]
 
 usable_df = usable_df[["Ticker", "Date", "Open", "Volume", "Adj_Close",
-                       "pct_change", indicator]]
+                       "pct_change", INDICATOR]]
 print(len(usable_df))
 print(len(usable_df['Ticker'].unique()))
-
-# remove rows with date that has already been optimized
-# usable_df_new = usable_df[~usable_df['Date'].isin(book['Date'])].reset_index(drop=True)
-
-# print(len(usable_df_new))
 
 # works but time complexity is an issue. It's erratic not necessarily bad
 
@@ -219,7 +214,7 @@ for i in dates_list:
     usable_df_new = usable_df[~usable_df['Date'].isin(book['Date'])].reset_index(drop=True)
     # if indicator == "MACD":
     date_only = usable_df_new[(usable_df_new['Date'] == i)
-                              & (usable_df_new[indicator] > 0)].reset_index(drop=True)
+                              & (usable_df_new[INDICATOR] > 0)].reset_index(drop=True)
     data = pd.concat([date_only]*20, ignore_index=True).reset_index(drop=True) # max 20 shares of any individual stock per date
     # data.rename(columns={'index': 'row_id'}, inplace=True)
     # else:
@@ -228,7 +223,7 @@ for i in dates_list:
     #     data = pd.concat([date_only]*5, ignore_index=True).reset_index()
     if not data.empty:
         start_time = time()
-        ticker, open_price, pct_change, metric = data['Ticker'], data['Open'], data['pct_change'], data[indicator]
+        ticker, open_price, pct_change, metric = data['Ticker'], data['Open'], data['pct_change'], data[INDICATOR]
         # open_price = data['Open']
         # pct_change = data['pct_change']
         # row_id = data['row_id']
@@ -241,13 +236,13 @@ for i in dates_list:
             book['FundSignal'] = book.PosNeg.rolling(window=10).mean().sort_index(level=1).values
             # book['FundSignal'].fillna(0, inplace=True)
         if len(book) < 1:
-            S = float(funds)
+            S = float(FUNDS)
         elif len(book) > 9 and abs(book.FundSignal.iat[-1]) > float(0.5):
             # use half of funds available
             # book['FundSignal'].fillna(0, inplace=True)
-            S = (float(funds) + float(book.CumulativeGainLoss.iat[-1]))*.5
+            S = (float(FUNDS) + float(book.CumulativeGainLoss.iat[-1]))*.5
         else:
-            S = float(funds)+float(book.CumulativeGainLoss.iat[-1])
+            S = float(FUNDS)+float(book.CumulativeGainLoss.iat[-1])
 
     # Moving average of last few days book, with binary pos/neg. (e.g. if µ last 5 days < -.6, use half of available capital)
         prob = LpProblem("Optimal_Portfolio", LpMaximize)
@@ -284,7 +279,7 @@ for i in dates_list:
         k += 1
         elapsed_time = float(end_time - start_time)
         print('{} out of {} dates optimized in {} seconds'.format(k, unique_dates, round(elapsed_time, 2)))
-        print(date_only.loc[date_only[indicator].idxmax()])
+        print(date_only.loc[date_only[INDICATOR].idxmax()])
         print(date_only.loc[date_only['pct_change'].idxmax()])
         # print('{} out of {} dates optimized in {} seconds'.format(k, unique_dates, round(elapsed_time, 2)))
 
@@ -310,4 +305,4 @@ fig.show()
 
 book = book.fillna(0)
 print("Total Return From {} to {} = ".format(sdate, edate) + str(round(sum(book['DailyGainLoss']),2)))
-print("Total Return From {} to {} = ".format(sdate, edate) + str(round(sum(book['DailyGainLoss'])/funds*100,2))+"%")
+print("Total Return From {} to {} = ".format(sdate, edate) + str(round(sum(book['DailyGainLoss'])/FUNDS*100,2))+"%")
