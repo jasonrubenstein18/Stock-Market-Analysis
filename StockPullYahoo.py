@@ -26,6 +26,8 @@ from itertools import permutations, chain
 import datetime as dt
 import gc
 from concurrent import futures
+import mysql.connector
+
 # import fix_yahoo_finance as yf
 # import timeit
 # from datetime import datetime
@@ -33,6 +35,20 @@ from concurrent import futures
 # matplotlib.use('TkAgg')
 # import matplotlib.pyplot as plt
 
+#SQL connection data to connect and save the data
+HOST = ...
+USERNAME = ...
+PASSWORD = ...
+DATABASE = ...
+
+db = mysql.connector.connect(
+    host = HOST,
+    user = USERNAME,
+    password = PASSWORD,
+    database = DATABASE
+)
+
+mycursor = db.cursor()
 
 path = '.../*.txt'
 stock_files = glob.glob(path)
@@ -50,18 +66,53 @@ tickers = tickers.sort_values().reset_index(drop=True)
 
 stocks_start = datetime.datetime(1974, 1, 1)
 stocks_end = datetime.datetime(2019, 12, 20)
-
 def get_stock_data(tickers, startdate, enddate):
     def data(ticker):
         for tickers in ticker:
-            try:
+            try:                
+                current_ticker = (yf.download(ticker, start=startdate, end=enddate)).reset_index(level=['Date'])
+                #print(current_ticker)           
+
+                try:
+                    # SQL statement
+                    sql = "CREATE TABLE IF NOT EXISTS " + ticker + " (ticker VARCHAR(10), date TIMESTAMP PRIMARY KEY, open DECIMAL(7, 3), high DECIMAL(7,3), low DECIMAL(7, 3), close DECIMAL(7, 3), adj_close DECIMAL(7, 3), volume INT(20));"
+
+                    # Works in creating new table -- deleted other MA's and program failed to show being finished                   
+                    
+                    # Execute the SQL command
+                    mycursor.execute(sql)
+
+                    # Commit your changes in the database
+                    db.commit()
+                    
+                    # Commit your changes in the database
+                    # db.commit()
+                    
+                    for i in range(19000): #19000
+                        try:
+                            #print(i)
+                            sql_two = "INSERT INTO " + ticker + "(ticker, date, open, high, low, close, adj_close, volume) VALUES('" + ticker + "', '" + str(current_ticker.iloc[i][0]) + "', " + str(current_ticker.iloc[i][1]) + ", " + str(current_ticker.iloc[i][2]) + ", " + str(current_ticker.iloc[i][3]) + ", " + str(current_ticker.iloc[i][4]) + ", " + str(current_ticker.iloc[i][5]) + ", " + str(current_ticker.iloc[i][6]) + ");"
+                            #print(sql_two)
+                            
+                            # Execute the SQL command
+                            mycursor.execute(sql_two)
+                            # Execute your changes in the database
+                            db.commit()
+                        except:
+                            # Rollback changes if there is an erroneous operation
+                            db.rollback()
+                            pass
+                    
+                except:
+                     # Rollback changes if there is an erroneous operation
+                    db.rollback()
+                
                 return (yf.download(ticker, start=startdate, end=enddate))
             except (ValueError, KeyError):
                 pass
-            time.sleep(1)
+            time.sleep(2)
     datas = map(data, tickers)
     return(pd.concat(datas, keys=tickers, names=['Ticker', 'Date']).reset_index())
-
 
 t1 = tickers
 
