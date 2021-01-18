@@ -4,7 +4,7 @@ Stock forecasting and other trading techniques
 
 From Command Line
 
-    1) python StockPullYahoo.py # retrieves daily stock data
+    1) python StockPullYahoo_csv.py # retrieves daily stock data (csv for now, loading in sql connection)
     
     2) python Optimizer_Backtest.py # Adds indicators and general fixes, run momentum optimizer and ESN
     
