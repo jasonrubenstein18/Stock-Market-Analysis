@@ -46,8 +46,6 @@ def get_stock_data(tickers, startdate, enddate):
     datas = map(data, tickers)
     return pd.concat(datas, keys=tickers, names=['Ticker', 'Date']).reset_index()
 
-t1 = ["SPY"]
-
 t1 = tickers
 
 start_time = time()
