@@ -120,11 +120,6 @@ start_time = time()
 #
 stock_data = get_stock_data(t1, stocks_start, stocks_end)#.reset_index()
 
-
-"""
-Create sqlite3 database for data storage?
-"""
-
 stock_data.to_csv('...csv', index=0)
 
 
