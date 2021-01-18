@@ -22,6 +22,13 @@ import plotly_express
 from multiprocessing import Pool
 
 
+matplotlib.use('TkAgg')
+pd.options.mode.chained_assignment = None  # default='warn'
+
+print("Number of processors: ", mp.cpu_count())
+os.environ["MODIN_ENGINE"] = "dask"
+import modin.pandas as pd_modin
+
 def startup():
     matplotlib.use('TkAgg')
     pd.options.mode.chained_assignment = None  # default='warn'
@@ -35,9 +42,9 @@ def read_data(chunksize):
     path = '/Users/jasonrubenstein/Desktop/Python/QuantFin1/StockData/*.csv'
     stock_files = glob.glob(path)
     for i in stock_files:
-        sd = pd.read_csv(i, chunksize=chunksize,
+        sd = pd_modin.read_csv(i, chunksize=chunksize,
                          iterator=True)
-        stock_data = pd.concat(sd, ignore_index=True)
+        stock_data = pd_modin.concat(sd, ignore_index=True)
         full_datas = full_datas.append(stock_data, ignore_index=True)
     # sd = pd.read_csv('~/Desktop/Python/QuantFin1/StockData/stock_data2020-03-19.csv',
     #                  chunksize=chunksize, iterator=True)
@@ -46,9 +53,7 @@ def read_data(chunksize):
     print("Most ancient date on file = " + str(full_datas['Date'].min()) + "\n")
 
 
-
 stock_data = read_data(100000)
-
 
 
 ticker_options = 0
